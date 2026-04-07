@@ -62,8 +62,19 @@ def get_weather(city: str, query_type: str, days: int = 3, date: str = "") -> st
             resp = requests.get(f"{base_url}/history.json", params={"key": api_key, "q": city, "dt": date}, timeout=10)
             resp.raise_for_status()
             data = resp.json()
-            day = data["forecast"]["forecastday"][0]["day"]
-            return f"{data['location']['name']} on {date}: {day['maxtemp_c']}°C/{day['mintemp_c']}°C, {day['condition']['text']}, Humidity {day['avghumidity']}%"
+            fd = data["forecast"]["forecastday"][0]
+            day = fd["day"]
+            astro = fd["astro"]
+            return (
+                f"{data['location']['name']} on {date}:\n"
+                f"  Condition : {day['condition']['text']}\n"
+                f"  Temp      : max {day['maxtemp_c']}°C / avg {day['avgtemp_c']}°C / min {day['mintemp_c']}°C\n"
+                f"  Humidity  : avg {day['avghumidity']}%\n"
+                f"  Wind      : max {day['maxwind_kph']} km/h\n"
+                f"  Precip    : {day['totalprecip_mm']} mm\n"
+                f"  UV Index  : {day['uv']}\n"
+                f"  Sunrise   : {astro['sunrise']}  |  Sunset: {astro['sunset']}"
+            )
 
         elif query_type == "hourly_history":
             if not date:

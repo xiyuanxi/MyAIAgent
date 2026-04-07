@@ -4,13 +4,19 @@ from langchain_core.tools import tool
 
 @tool
 def get_stock_price(ticker: str) -> str:
-    """根据股票代码获取当前股票价格，例如 NVDA、MSFT、AAPL。"""
+    """根据股票代码获取当前股票价格。
+    支持美股（NVDA、AAPL）、A股（600519.SS、000858.SZ）、港股（0700.HK）等。
+    """
     print(f"[Tool Called] get_stock_price(ticker={ticker})")
     stock = yf.Ticker(ticker)
-    price = stock.fast_info.last_price
+    info = stock.fast_info
+    price = info.last_price
     if price is None:
         return f"无法获取 {ticker} 的股票价格"
-    return f"{ticker} 当前股价为 {price:.2f} 美元"
+    currency = getattr(info, "currency", None) or "USD"
+    exchange = getattr(info, "exchange", None)
+    exchange_str = f"（{exchange}）" if exchange else ""
+    return f"{ticker}{exchange_str} 当前股价为 {price:.2f} {currency}"
 
 
 @tool
@@ -24,7 +30,8 @@ def get_stock_history(ticker: str, days: int = 5) -> str:
     hist = stock.history(period=f"{days}d")
     if hist.empty:
         return f"无法获取 {ticker} 的历史数据"
-    lines = [f"{ticker} 最近 {len(hist)} 个交易日数据:"]
+    currency = getattr(stock.fast_info, "currency", None) or "USD"
+    lines = [f"{ticker} 最近 {len(hist)} 个交易日数据（{currency}）:"]
     for date, row in hist.iterrows():
         date_str = date.strftime("%Y-%m-%d")
         change = row["Close"] - row["Open"]

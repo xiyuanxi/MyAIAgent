@@ -27,16 +27,21 @@ def get_stock_history(ticker: str, days: int = 5) -> str:
     """
     print(f"[Tool Called] get_stock_history(ticker={ticker}, days={days})")
     stock = yf.Ticker(ticker)
-    hist = stock.history(period=f"{days}d")
+    # 多取一天，用于计算第一条记录的日间涨跌幅
+    hist = stock.history(period=f"{days + 1}d")
     if hist.empty:
         return f"无法获取 {ticker} 的历史数据"
     currency = getattr(stock.fast_info, "currency", None) or "USD"
-    lines = [f"{ticker} 最近 {len(hist)} 个交易日数据（{currency}）:"]
-    for date, row in hist.iterrows():
+    lines = [f"{ticker} 最近 {min(len(hist), days)} 个交易日数据（{currency}，涨跌幅对比前一交易日收盘价）:"]
+    rows = list(hist.iterrows())
+    # 只输出请求的 days 条，但用前一条的收盘价计算涨跌幅
+    for i, (date, row) in enumerate(rows):
+        if i == 0:
+            continue  # 第一条仅作为基准，不输出
         date_str = date.strftime("%Y-%m-%d")
-        change = row["Close"] - row["Open"]
-        change_pct = change / row["Open"] * 100
-        sign = "+" if change >= 0 else ""
+        prev_close = rows[i - 1][1]["Close"]
+        change_pct = (row["Close"] - prev_close) / prev_close * 100
+        sign = "+" if change_pct >= 0 else ""
         lines.append(
             f"  {date_str} | 开 {row['Open']:.2f} | 收 {row['Close']:.2f} | "
             f"{sign}{change_pct:.2f}% | 量 {int(row['Volume']):,}"

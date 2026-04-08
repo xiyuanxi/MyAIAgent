@@ -1,5 +1,7 @@
 from datetime import date as _date
 
+_WEEKDAYS = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
+
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
@@ -12,7 +14,8 @@ load_dotenv()
 def create_agent_executor():
     llm = ChatOpenAI(model="gpt-4o", temperature=0)
     system_prompt = (
-        f"你是一个助手。今天的日期是 {_date.today().isoformat()}。"
+        f"你是一个助手。今天是 {_date.today().isoformat()}（{_WEEKDAYS[_date.today().weekday()]}）。"
+        "在回复中涉及日期时，请同时显示星期几。"
         "当用户提到'今天'、'昨天'、'上星期'等相对日期时，请根据今天的日期正确推算出具体日期。"
         "当用户询问股票价格等实时信息时，你必须先调用搜索工具查询，不得直接回答说无法获取。"
         "当用户询问某股票最近几天、一周、一个月等历史走势或历史数据时，必须调用 get_stock_history 工具，不得引导用户去外部网站查询。"

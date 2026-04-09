@@ -1,12 +1,13 @@
 import uuid
+from datetime import date as _date
 from typing import Dict, List
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.messages import HumanMessage, BaseMessage, SystemMessage
 from pydantic import BaseModel
 
-from agent import create_agent_executor
+from agent import create_agent_executor, WEEKDAYS
 
 app = FastAPI(title="MyAIAgent API")
 
@@ -41,8 +42,10 @@ def chat(req: ChatRequest):
     session_id = req.session_id or str(uuid.uuid4())
     history = sessions.setdefault(session_id, [])
     history.append(HumanMessage(content=req.message))
+    today = _date.today()
+    date_msg = SystemMessage(content=f"今天是 {today.isoformat()}（{WEEKDAYS[today.weekday()]}）。")
     # noinspection PyTypeChecker
-    response = agent_executor.invoke({"messages": history})
+    response = agent_executor.invoke({"messages": [date_msg] + history})
     ai_message = response["messages"][-1]
     history.append(ai_message)
     return ChatResponse(reply=ai_message.content, session_id=session_id)

@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_agent
 
 from tools import create_tools
@@ -23,8 +24,11 @@ _SYSTEM_PROMPT = (
 )
 
 
-def create_agent_executor():
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+def create_agent_executor(provider: str = "openai"):
+    if provider == "gemini":
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
+    else:
+        llm = ChatOpenAI(model="gpt-4.1", temperature=0)
     return create_agent(
         model=llm,
         tools=create_tools(),

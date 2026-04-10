@@ -54,6 +54,7 @@ def chat(req: ChatRequest):
             detail=f"Model '{req.model}' is not available. Available: {list(executors.keys())}",
         )
     session_id = req.session_id or str(uuid.uuid4())
+    print(f"[chat] model={req.model} session={session_id[:8]} message={req.message!r}")
     history = sessions.setdefault(session_id, [])
     history.append(HumanMessage(content=req.message))
     today = _date.today()

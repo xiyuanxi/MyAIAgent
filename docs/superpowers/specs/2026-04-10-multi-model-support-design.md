@@ -20,7 +20,7 @@ Model is chosen **per message** — each `POST /chat` request carries an optiona
 | provider   | LLM class                        | Model              | Package                    |
 |------------|----------------------------------|--------------------|----------------------------|
 | `"openai"` | `ChatOpenAI`                     | `gpt-4o`           | `langchain-openai` (existing) |
-| `"gemini"` | `ChatGoogleGenerativeAI`         | `gemini-2.0-flash` | `langchain-google-genai` (new) |
+| `"gemini"` | `ChatGoogleGenerativeAI`         | `gemini-2.5-flash` | `langchain-google-genai` (new) |
 
 Both providers use the same tools list and system prompt defined in `_SYSTEM_PROMPT`.
 

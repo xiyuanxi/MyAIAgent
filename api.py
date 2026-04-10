@@ -62,7 +62,13 @@ def chat(req: ChatRequest):
     response = executor.invoke({"messages": [date_msg] + history})
     ai_message = response["messages"][-1]
     history.append(ai_message)
-    return ChatResponse(reply=ai_message.content, session_id=session_id)
+    content = ai_message.content
+    if isinstance(content, list):
+        content = "".join(
+            part["text"] if isinstance(part, dict) and "text" in part else str(part)
+            for part in content
+        )
+    return ChatResponse(reply=content, session_id=session_id)
 
 
 @app.delete("/sessions/{session_id}")

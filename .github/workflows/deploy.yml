@@ -1,0 +1,24 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/MyAIAgent
+            git pull origin develop
+            .venv/bin/pip install -r requirements.txt --quiet
+            sudo systemctl restart myaiagent
+            sleep 3
+            sudo systemctl is-active --quiet myaiagent && echo "✅ Service started successfully" || echo "❌ Service failed to start"
